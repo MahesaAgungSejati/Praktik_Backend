@@ -2,8 +2,10 @@
 
 namespace App\Controllers;
 use App\Models\ProductModel;
+use CodeIgniter\API\ResponseTrait;
 
 class ProductController extends BaseController {
+    use ResponseTrait;
 
     protected $product;
     public function __construct(){
@@ -19,22 +21,36 @@ class ProductController extends BaseController {
         $this->product->insert($data);
     }
 
-    public function readProduct(){
+    public function readProductApi(){
         $products = $this->product->findAll();
-        $data = [
-            'product' => $products
-        ];
-        return view('product', $data);
+        
+        return $this->respond([
+            'code'=> 200,
+            'status'=> 'OK',
+            'data'=> $products
+        ]);
     }
 
-    public function getProduct($id) {
-
-        $product = $this->product->where('id',$id)->first();
-        $data = [
-            'product' => $product
-        ];
-        return view('edit_product', $data);
+    public function getProductApi($id) {
+    $product = $this->product->where("id", $id)->first();
+    
+    if(!$product){
+        $this->response->setStatusCode(404);
+        return $this->response->setJSON(
+            [
+                "code"=> 404,
+                "status"=> 'NOT FOUND',
+                'data'=> 'product not found'
+            ]
+        );
     }
+
+    return $this->respond([
+        'code'=> 200,
+        'status'=> 'OK',
+        'data'=> $product
+    ]);
+}
 
     public function updateProduct($id) {
         $data = [
